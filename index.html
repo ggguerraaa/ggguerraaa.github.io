@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ggguerra // archive</title>
+
+  <style>
+    @font-face {
+      font-family: 'OldEnglish';
+      src: url('fonts/helmet/helmet-1.0/old-english-five/OldEnglishFive.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'Helmet';
+      src: url('fonts/helmet/helmet-1.0/Helmet-Regular.ttf') format('truetype');
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #050505;
+      background-image: linear-gradient(rgba(6, 6, 6, 0.55), rgba(6, 6, 6, 0.55)), url('images/background/background.png');
+      background-position: center;
+      background-size: cover;
+      background-attachment: fixed;
+      color: #D1D1D1;
+      font-family: 'Helmet', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* CANVAS 3D BACKGROUND */
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* INTERFACE OVERLAY */
+    .ui-layer {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(16px, 2.4vw, 28px) clamp(20px, 4vw, 56px) 40px;
+    }
+
+    /* TOP NAV */
+    nav.topnav {
+      display: flex;
+      align-items: center;
+      gap: clamp(16px, 3vw, 40px);
+      border-bottom: 1px solid #222;
+      padding-bottom: 14px;
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    .logo-mark {
+      border: 1px solid #444;
+      padding: 4px 8px;
+      font-weight: bold;
+      color: #E6E6E6;
+      letter-spacing: 1px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: clamp(14px, 2.4vw, 30px);
+      flex: 1;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      color: #999;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover { color: #fff; }
+
+    .nav-support {
+      background: #E6E6E6;
+      color: #050505;
+      padding: 8px 14px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    /* RADIO */
+    .radio-section {
+      margin-top: clamp(30px, 5vh, 60px);
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #FF0000;
+      margin-bottom: 12px;
+    }
+
+    .radio-embed {
+      border: 1px solid #222;
+      background: #0A0A0A;
+      padding: 10px;
+    }
+
+    .radio-embed iframe {
+      display: block;
+      width: 100%;
+      border: none;
+    }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      margin: clamp(30px, 6vh, 80px) 0 clamp(40px, 7vh, 90px);
+    }
+
+    .hero-title {
+      font-family: 'OldEnglish', serif;
+      font-size: clamp(4.5rem, 13vw, 10rem);
+      color: #E6E6E6;
+      line-height: 0.75;
+      text-shadow: 0 0 24px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
+      opacity: 0.7;
+    }
+
+    /* GRID / ARCHIVE */
+    .grid-section {
+      border-top: 1px solid #222;
+      padding-top: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(14px, 2vw, 24px);
+    }
+
+    .card {
+      background: #0A0A0A;
+      border: 1px solid #1A1A1A;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: #FF0000;
+      transform: translateY(-2px);
+    }
+
+    .card-art {
+      aspect-ratio: 1 / 1;
+      background-size: cover;
+      background-position: center;
+      background-color: #0D0D0D;
+      position: relative;
+    }
+
+    .card-art-blank {
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .soon-label {
+      color: #555;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .card-soon { cursor: default; }
+
+    .card-info {
+      padding: 14px 14px 16px;
+      border-top: 1px solid #1A1A1A;
+    }
+
+    .row-id {
+      color: #FF0000;
+      font-size: 10px;
+      margin-right: 8px;
+      letter-spacing: 1px;
+    }
+
+    .row-title {
+      font-weight: bold;
+      letter-spacing: 1px;
+      font-size: 12px;
+      display: block;
+      margin: 6px 0 4px;
+    }
+
+    .row-meta {
+      font-size: 9.5px;
+      color: #555;
+      letter-spacing: 0.5px;
+      display: block;
+      text-transform: uppercase;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .dl-wrap {
+      position: relative;
+    }
+
+    .dl-trigger {
+      border: 1px solid #333;
+      background: #0A0A0A;
+      padding: 4px 8px;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: #999;
+      text-transform: uppercase;
+      font-family: 'Helmet', sans-serif;
+      cursor: pointer;
+    }
+
+    .dl-trigger:hover,
+    .dl-trigger.is-open {
+      border-color: #FF0000;
+      color: #fff;
+    }
+
+    .dl-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 6px;
+      min-width: 190px;
+      background: #0A0A0A;
+      border: 1px solid #333;
+      z-index: 20;
+    }
+
+    .dl-menu.is-open {
+      display: block;
+    }
+
+    .dl-menu a {
+      display: block;
+      padding: 9px 12px;
+      font-size: 9.5px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ccc;
+      text-decoration: none;
+      border-bottom: 1px solid #1A1A1A;
+    }
+
+    .dl-menu a:last-child {
+      border-bottom: none;
+    }
+
+    .dl-menu a:hover {
+      background: rgba(255, 0, 0, 0.08);
+      color: #fff;
+    }
+
+    /* DISCOVER */
+    .discover {
+      margin-top: clamp(50px, 8vh, 90px);
+      border-top: 1px solid #222;
+      padding-top: 26px;
+    }
+
+    .discover-head {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #E6E6E6;
+      margin-bottom: 24px;
+    }
+
+    .discover-head::before,
+    .discover-head::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #222;
+    }
+
+    .link-group {
+      max-width: 900px;
+      margin: 0 auto 28px;
+    }
+
+    .link-group:last-child { margin-bottom: 0; }
+
+    .link-group-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #FF0000;
+      margin-bottom: 12px;
+    }
+
+    .tags {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .tag {
+      border: 1px solid #262626;
+      background: #0A0A0A;
+      color: #999;
+      text-decoration: none;
+      text-align: center;
+      padding: 12px 10px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+    }
+
+    .tag:hover {
+      border-color: #FF0000;
+      color: #fff;
+      background: rgba(255,0,0,0.05);
+    }
+
+    /* FOOTER */
+    footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-top: 1px solid #222;
+      padding-top: 20px;
+      margin-top: 50px;
+      font-size: 9.5px;
+      color: #444;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .tags { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hero { margin-top: 40px; }
+      .hero-title { font-size: 5.6vw; }
+      .radio-embed iframe { height: 300px; }
+      footer { text-align: center; }
+    }
+  </style>
+
+  <!-- THREE.JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div class="ui-layer">
+    <nav class="topnav">
+      <div class="logo-mark">ggg</div>
+      <div class="nav-links">
+        <a href="#radio">Radio</a>
+        <a href="#plugins">Plugins</a>
+        <a href="#">Arts</a>
+        <a href="#">Shop</a>
+      </div>
+      <div class="nav-support">Support ggguerra</div>
+    </nav>
+
+    <main>
+      <section class="hero">
+        <h1 class="hero-title">ggguerra</h1>
+      </section>
+
+      <section class="grid-section" id="plugins">
+        <div class="grid">
+          <div class="card">
+            <div class="card-art" style="background-image: linear-gradient(160deg, rgba(20,20,20,0.35), rgba(0,0,0,0.75)), url('images/plugins/dddistortion.png');"></div>
+            <div class="card-info">
+              <span class="row-id">[001]</span>
+              <span class="row-title">DDDISTORTION</span>
+              <span class="row-meta">VST3 — Distortion Plugin</span>
+              <div class="card-actions">
+                <div class="dl-wrap">
+                  <button class="dl-trigger" onclick="toggleDl(event, this)">Download ▾</button>
+                  <div class="dl-menu">
+                    <a href="images/plugins/vst/DDDISTORTION.vst3" download="DDDISTORTION.vst3">VST3</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-art" style="background-image: linear-gradient(160deg, rgba(20,20,20,0.35), rgba(0,0,0,0.75)), url('images/plugins/xmasher.png');"></div>
+            <div class="card-info">
+              <span class="row-id">[002]</span>
+              <span class="row-title">XMASHER</span>
+              <span class="row-meta">VST3 / EXE — Distortion Plugin</span>
+              <div class="card-actions">
+                <div class="dl-wrap">
+                  <button class="dl-trigger" onclick="toggleDl(event, this)">Download ▾</button>
+                  <div class="dl-menu">
+                    <a href="images/plugins/vst/XMASHER.vst3" download="XMASHER.vst3">VST3</a>
+                    <a href="images/plugins/vst/XMASHER.exe" download="XMASHER.exe">EXE (Windows Installer)</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-soon">
+            <div class="card-art card-art-blank"><span class="soon-label">Em Breve</span></div>
+            <div class="card-info">
+              <span class="row-id">[003]</span>
+              <span class="row-title">&nbsp;</span>
+              <span class="row-meta">&nbsp;</span>
+            </div>
+          </div>
+
+          <div class="card card-soon">
+            <div class="card-art card-art-blank"><span class="soon-label">Em Breve</span></div>
+            <div class="card-info">
+              <span class="row-id">[004]</span>
+              <span class="row-title">&nbsp;</span>
+              <span class="row-meta">&nbsp;</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="discover" id="linktree">
+        <div class="discover-head">ggguerra</div>
+
+        <div class="link-group">
+          <div class="link-group-label">Redes Sociais</div>
+          <div class="tags">
+            <a href="#" target="_blank" rel="noopener" class="tag">Instagram</a>
+            <a href="#" target="_blank" rel="noopener" class="tag">TikTok</a>
+            <a href="#" target="_blank" rel="noopener" class="tag">YouTube</a>
+            <a href="#" target="_blank" rel="noopener" class="tag">X / Twitter</a>
+          </div>
+        </div>
+
+        <div class="link-group">
+          <div class="link-group-label">Mídias</div>
+          <div class="tags">
+            <a href="#" target="_blank" rel="noopener" class="tag">Spotify</a>
+            <a href="#" target="_blank" rel="noopener" class="tag">SoundCloud</a>
+            <a href="#" target="_blank" rel="noopener" class="tag">Bandcamp</a>
+            <a href="#" target="_blank" rel="noopener" class="tag">Apple Music</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="radio-section" id="radio">
+        <div class="section-label">Radio</div>
+        <div class="radio-embed">
+          <iframe
+            title="ggguerra on SoundCloud"
+            width="100%"
+            height="400"
+            scrolling="no"
+            frameborder="no"
+            allow="autoplay"
+            src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/ggguerra&color=%23ff0000&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div>© 2026 ggguerra. All rights reserved.</div>
+    </footer>
+  </div>
+
+  <script>
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambientLight);
+
+    const redLight = new THREE.DirectionalLight(0xff0000, 2);
+    redLight.position.set(-5, 5, 2);
+    scene.add(redLight);
+
+    const whiteLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    whiteLight.position.set(5, -5, 5);
+    scene.add(whiteLight);
+
+    const geometry = new THREE.TorusKnotGeometry(1.2, 0.3, 100, 16);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x111111,
+      roughness: 0.2,
+      metalness: 0.9
+    });
+    const metalheartObj = new THREE.Mesh(geometry, material);
+    scene.add(metalheartObj);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      metalheartObj.rotation.x += 0.003;
+      metalheartObj.rotation.y += 0.005;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    function closeAllDlMenus() {
+      document.querySelectorAll('.dl-menu.is-open').forEach(function (m) { m.classList.remove('is-open'); });
+      document.querySelectorAll('.dl-trigger.is-open').forEach(function (b) { b.classList.remove('is-open'); });
+    }
+
+    function toggleDl(event, btn) {
+      event.stopPropagation();
+      const menu = btn.nextElementSibling;
+      const wasOpen = menu.classList.contains('is-open');
+      closeAllDlMenus();
+      if (!wasOpen) {
+        menu.classList.add('is-open');
+        btn.classList.add('is-open');
+      }
+    }
+
+    document.addEventListener('click', closeAllDlMenus);
+  </script>
+</body>
+</html>
